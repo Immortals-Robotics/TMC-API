@@ -4,6 +4,9 @@ set(CMAKE_C_STANDARD 17)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 
 # Features
+option(FEATURE_SPI_ARRAY_TRANSFER "Use array SPI transfers" ON)
+
+# ICs
 option(FEATURE_TMC4671 "TMC4671 IC" OFF)
 option(FEATURE_TMC6200 "TMC6200 IC" OFF)
 
@@ -68,6 +71,10 @@ if (${FEATURE_TMC6200})
 endif ()
 
 target_sources(${PROJECT_NAME} PRIVATE ${HEADER_FILES} ${SOURCE_FILES})
+
+if (${FEATURE_SPI_ARRAY_TRANSFER})
+    target_compile_definitions(${PROJECT_NAME} PRIVATE FEATURE_SPI_ARRAY_TRANSFER=1)
+endif ()
 
 install(TARGETS ${PROJECT_NAME}
         EXPORT ${PROJECT_NAME}_target

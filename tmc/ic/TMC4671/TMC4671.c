@@ -15,15 +15,30 @@
 #define STATE_ESTIMATE_OFFSET  3
 
 // => SPI wrapper
+#ifdef FEATURE_SPI_ARRAY_TRANSFER
+extern void tmc4671_readWriteArray(uint8_t motor, uint8_t *data, size_t length);
+#else
 extern uint8_t tmc4671_readwriteByte(uint8_t motor, uint8_t data, uint8_t lastTransfer);
+#endif
 // <= SPI wrapper
 
 // spi access
 int32_t tmc4671_readInt(uint8_t motor, uint8_t address)
 {
 	// clear write bit
-	address &= 0x7F;
+	address = TMC_ADDRESS(address);
 
+#ifdef FEATURE_SPI_ARRAY_TRANSFER
+	uint8_t data[5];
+
+	data[0] = address;
+	tmc4671_readWriteArray(motor, &data[0], 5);
+
+	data[0] = address;
+	tmc4671_readWriteArray(motor, &data[0], 5);
+
+	return ((uint32_t)data[1] << 24) | ((uint32_t)data[2] << 16) | (data[3] << 8) | data[4];
+#else
 	// write address
 	tmc4671_readwriteByte(motor, address, false);
 
@@ -37,18 +52,27 @@ int32_t tmc4671_readInt(uint8_t motor, uint8_t address)
 	value |= tmc4671_readwriteByte(motor, 0, true);
 
 	return value;
+#endif
 }
 
 void tmc4671_writeInt(uint8_t motor, uint8_t address, int32_t value)
 {
+	// add write bit
+	address = address | TMC_WRITE_BIT;
+
+#ifdef FEATURE_SPI_ARRAY_TRANSFER
+	uint8_t data[5] = { address, BYTE(value, 3), BYTE(value, 2), BYTE(value, 1), BYTE(value, 0) };
+	tmc4671_readWriteArray(motor, &data[0], 5);
+#else
 	// write address
-	tmc4671_readwriteByte(motor, address|0x80, false);
+	tmc4671_readwriteByte(motor, address, false);
 
 	// write value
 	tmc4671_readwriteByte(motor, 0xFF & (value>>24), false);
 	tmc4671_readwriteByte(motor, 0xFF & (value>>16), false);
 	tmc4671_readwriteByte(motor, 0xFF & (value>>8), false);
 	tmc4671_readwriteByte(motor, 0xFF & (value>>0), true);
+#endif
 }
 
 uint16_t tmc4671_readRegister16BitValue(uint8_t motor, uint8_t address, uint8_t channel)
