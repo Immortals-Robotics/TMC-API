@@ -73,7 +73,7 @@ endif ()
 target_sources(${PROJECT_NAME} PRIVATE ${HEADER_FILES} ${SOURCE_FILES})
 
 if (${FEATURE_SPI_ARRAY_TRANSFER})
-    target_compile_definitions(${PROJECT_NAME} PRIVATE FEATURE_SPI_ARRAY_TRANSFER=1)
+    target_compile_definitions(${PROJECT_NAME} PUBLIC FEATURE_SPI_ARRAY_TRANSFER=1)
 endif ()
 
 install(TARGETS ${PROJECT_NAME}
