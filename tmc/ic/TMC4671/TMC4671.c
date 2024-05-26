@@ -34,9 +34,6 @@ int32_t tmc4671_readInt(uint8_t motor, uint8_t address)
 	data[0] = address;
 	tmc4671_readWriteArray(motor, &data[0], 5);
 
-	data[0] = address;
-	tmc4671_readWriteArray(motor, &data[0], 5);
-
 	return ((uint32_t)data[1] << 24) | ((uint32_t)data[2] << 16) | (data[3] << 8) | data[4];
 #else
 	// write address
